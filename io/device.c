@@ -6,6 +6,14 @@ PIO_DEVICE_NODE	IoDeviceListHead	= NULL;
 PIO_DEVICE_NODE	IoDeviceListTail	= NULL;
 PPS_MUTEX		IoDeviceListMutex	= NULL;
 
+
+
+
+// ----------------------------------------------------------------------------
+//  Name: IoInitDeviceManager
+//
+//  Desc: Initializes the device manager.
+// ----------------------------------------------------------------------------
 STATUS
 IoInitDeviceManager()
 {
@@ -20,6 +28,14 @@ done:
 	return result;
 }
 
+
+
+
+// ----------------------------------------------------------------------------
+//  Name: IoRegisterDevice
+//
+//  Desc: Register a new Device.
+// ----------------------------------------------------------------------------
 STATUS
 IoRegisterDevice( PIO_DEVICE pDevice )
 {
@@ -80,6 +96,14 @@ done:
 	return result;
 }
 
+
+
+
+// ----------------------------------------------------------------------------
+//  Name: IoUnregisterDevice
+//
+//  Desc: Unregisters a device given its pointer.
+// ----------------------------------------------------------------------------
 STATUS
 IoUnregisterDevice( PIO_DEVICE pDevice )
 {
@@ -134,11 +158,21 @@ done:
 	return result;
 }
 
+
+
+
+// ----------------------------------------------------------------------------
+//  Name: IoGetDeviceByName
+//
+//  Desc: Searches for a Device by its name and returns it if found.
+// ----------------------------------------------------------------------------
 STATUS
 IoGetDeviceByName( PCHAR Name,
 				   PIO_DEVICE* ppDevice )
 {
 	STATUS result = STATUS_SUCCESS;
+
+	// TODO: Implement this?
 
 	return result;
 }
