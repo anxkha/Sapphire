@@ -1,34 +1,25 @@
-libpath = /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Lib" /LIBPATH:"C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib"
-libpath64 = /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Lib\x64" /LIBPATH:"C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib\amd64"
-cl = "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\cl.exe"
-cl64 = "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64\cl.exe"
-link = "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe"
-link64 = "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64\link.exe"
+libpath = /LIBPATH:"C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Lib\x64" /LIBPATH:"C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\lib\amd64"
+cl = "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64\cl.exe"
+link = "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64\link.exe"
+nasm = "C:\temp\nasm\nasm.exe"
 clparam = /nologo /EHsc /c /D "_CONSOLE" /D "WIN32" /D "NDEBUG" /D "UNICODE" /D "_UNICODE" /Zc:wchar_t /Zc:forScope /Gd /GS /Gy /GL /W3 /O2 /Oi
-linkparam = /LTCG /RELEASE /SUBSYSTEM:CONSOLE /NOLOGO /MACHINE:X86 /DYNAMICBASE /NXCOMPAT /OPT:REF /OPT:ICF /ALLOWISOLATION /INCREMENTAL:NO $(libpath)
-linkparam64 = /LTCG /RELEASE /SUBSYSTEM:CONSOLE /NOLOGO /MACHINE:X64 /DYNAMICBASE /NXCOMPAT /OPT:REF /OPT:ICF /ALLOWISOLATION /INCREMENTAL:NO $(libpath64)
-objs = instsoft.obj
-objs64 = instsoft64.obj
-src = instsoft.cpp
-libs = kernel32.lib advapi32.lib
-target = instsoft.exe
-target64 = instsoft64.exe
+linkparam = /LTCG /RELEASE /SUBSYSTEM:CONSOLE /NOLOGO /MACHINE:X64 /DYNAMICBASE /NXCOMPAT /OPT:REF /OPT:ICF /ALLOWISOLATION /INCREMENTAL:NO $(libpath)
+objs = dump512.obj
+src = start.asm
+target = start.bin
+dump512 = dump512.exe
 
-all: $(target) $(target64)
-
-x64: $(target64)
+all: $(target) $(dump512)
 
 clean:
-	del $(objs) $(objs64) $(target) $(target64)
+	del $(objs) $(target) $(dump512)
 
-instsoft.obj: instsoft.cpp
-	$(cl) $(clparam) /Fo"$@" instsoft.cpp
+dump512.obj: dump512.cpp
+	$(cl) $(clparam) /Fo"$@" $**
 
-instsoft64.obj: instsoft.cpp
-	$(cl64) $(clparam) /Fo"$@" instsoft.cpp
+$(dump512): $(objs)
+	$(link) $(linkparam) /OUT:$(dump512) kernel32.lib $**
 
-$(target): $(objs)
-	$(link) $(linkparam) /OUT:$(target) $(libs) $**
+$(target):
+	$(nasm) -o $@ bootloader\start.asm
 
-$(target64): $(objs64)
-	$(link64) $(linkparam64) /OUT:$(target64) $(libs) $**

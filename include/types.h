@@ -19,4 +19,18 @@ typedef void VOID, *PVOID;
 #define TRUE 1
 #define FALSE 0
 
+#define PACKED		__attribute__((packed))
+#ifndef __stdcall
+#define __stdcall	__attribute__((stdcall))
+#endif // __stdcall
+#define STDCALL __stdcall
+
+#define ROUND_UP(N, S)		((N) + (S) - ((N) % (S)))
+#define ROUND_DOWN(N, S)	((N) - ((N) % (S)))
+
+#define LOWORD(x)	(x & 0xFFFF)
+#define HIWORD(x)	(x >> 16)
+#define LOBYTE(w)	(w & 0xFF)
+#define HIBYTE(w)	((WORD)w >> 8)
+
 #endif /* _TYPES_H */

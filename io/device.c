@@ -1,10 +1,10 @@
 #include <sddk.h>
 
-LIST_CREATE( IO_DEVICE_NODE, PIO_DEVICE )
+LIST_CREATE( IO_DEVICE_NODE, IO_DEVICE )
 
-PIO_DEVICE_NODE	IoDeviceListHead	= NULL;
-PIO_DEVICE_NODE	IoDeviceListTail	= NULL;
-PPS_MUTEX		IoDeviceListMutex	= NULL;
+IO_DEVICE_NODE*	IoDeviceListHead	= NULL;
+IO_DEVICE_NODE*	IoDeviceListTail	= NULL;
+PS_MUTEX*		IoDeviceListMutex	= NULL;
 
 
 
@@ -37,10 +37,10 @@ done:
 //  Desc: Register a new Device.
 // ----------------------------------------------------------------------------
 STATUS
-IoRegisterDevice( PIO_DEVICE pDevice )
+IoRegisterDevice( IO_DEVICE* pDevice )
 {
 	STATUS result = STATUS_SUCCESS;
-	PIO_DEVICE_NODE node = NULL;
+	IO_DEVICE_NODE* node = NULL;
 
 	if( !pDevice )
 	{
@@ -60,7 +60,7 @@ IoRegisterDevice( PIO_DEVICE pDevice )
 		goto done;
 	}
 
-	node = MmAllocateHeap( sizeof(IO_DEVICE_NODE), MM_TYPE_KERNEL );
+	node = (IO_DEVICE_NODE*)MmHeapAllocate( sizeof(IO_DEVICE_NODE), MM_TYPE_KERNEL );
 	if( !node )
 	{
 		result = STATUS_OUT_OF_MEMORY;
@@ -73,16 +73,16 @@ IoRegisterDevice( PIO_DEVICE pDevice )
 
 	PsMutexAcquire( IoDeviceListMutex );
 
-	if( !VfsFilesystemListHead )
+	if( !IoDeviceListHead )
 	{
-		VfsFilesystemListHead = node;
-		VfsFilesystemListTail = node;
+		IoDeviceListHead = node;
+		IoDeviceListTail = node;
 	}
 	else
 	{
-		node->Previous = VfsFilesystemListTail;
+		node->Previous = IoDeviceListTail;
 		node->Previous->Next = node;
-		VfsFilesystemListTail = node;
+		IoDeviceListTail = node;
 	}
 
 	PsMutexRelease( IoDeviceListMutex );
@@ -90,7 +90,7 @@ IoRegisterDevice( PIO_DEVICE pDevice )
 done:
 	if( !SUCCESS(result) )
 	{
-		if( node ) MmFreeHeap( node, MM_TYPE_KERNEL );
+		if( node ) MmHeapFree( node, MM_TYPE_KERNEL );
 	}
 
 	return result;
@@ -105,10 +105,10 @@ done:
 //  Desc: Unregisters a device given its pointer.
 // ----------------------------------------------------------------------------
 STATUS
-IoUnregisterDevice( PIO_DEVICE pDevice )
+IoUnregisterDevice( IO_DEVICE* pDevice )
 {
 	STATUS result = STATUS_SUCCESS;
-	PIO_DEVICE_NODE node = NULL;
+	IO_DEVICE_NODE* node = NULL;
 
 	PsMutexAcquire( IoDeviceListMutex );
 
@@ -142,7 +142,7 @@ IoUnregisterDevice( PIO_DEVICE pDevice )
 				}
 			}
 
-			MmFreeHeap( node, MM_TYPE_KERNEL );
+			MmHeapFree( node, MM_TYPE_KERNEL );
 
 			goto done;
 		}
@@ -168,7 +168,7 @@ done:
 // ----------------------------------------------------------------------------
 STATUS
 IoGetDeviceByName( PCHAR Name,
-				   PIO_DEVICE* ppDevice )
+				   IO_DEVICE** ppDevice )
 {
 	STATUS result = STATUS_SUCCESS;
 

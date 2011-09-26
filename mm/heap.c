@@ -1,9 +1,22 @@
+// Preprocessor directives.
 #include <sddk.h>
-#include "mm.h"
+#include "mem.h"
 
+
+
+
+// Global declarations.
 MEMNODE*	HeapBase;
 ULONG		HeapEnd;
 
+
+
+
+// ----------------------------------------------------------------------------
+//  Name: MmInitializeHeap
+//
+//  Desc: Initializes the kernel memory heap.
+// ----------------------------------------------------------------------------
 VOID MmInitializeHeap( ULONG MemSize )
 {
 	HeapBase = (MEMNODE*)MmAllocatePageAlignedMemory( MemSize );
@@ -15,12 +28,20 @@ VOID MmInitializeHeap( ULONG MemSize )
 	HeapEnd = (ULONG)HeapBase + MemSize;
 }
 
+
+
+
+// ----------------------------------------------------------------------------
+//  Name: MmHeapAllocate
+//
+//  Desc: Allocates memory on a heap.
+// ----------------------------------------------------------------------------
 PVOID
-MmHeapAllocate( QWORD Size,
+MmHeapAllocate( ULONG Size,
 			    BYTE Type )
 {
-	PMM_HEAP_NODE pNew;
-	PMM_HEAP_NODE pCurrent;
+	MEMNODE* pNew;
+	MEMNODE* pCurrent;
 	PVOID Address = NULL;
 
 	pCurrent = HeapBase;
@@ -29,25 +50,25 @@ MmHeapAllocate( QWORD Size,
 	{
 		if( pCurrent->Next == NULL )
 		{
-			if( ((QWORD)pCurrent + (2 * sizeof(MM_HEAP_NODE)) + pCurrent->Size + Size) >= HeapEnd ) return NULL;
+			if( ((ULONG)pCurrent + (2 * sizeof(MEMNODE)) + pCurrent->Size + Size) >= HeapEnd ) return NULL;
 
-			pNew = (PMM_HEAP_NODE)((QWORD)pCurrent + sizeof(MM_HEAP_NODE) + pCurrent->Size);
-			pNew->Signature = MM_SIGNATURE;
+			pNew = (MEMNODE*)((ULONG)pCurrent + sizeof(MEMNODE) + pCurrent->Size);
+			pNew->Signature = MEM_SIGNATURE;
 			pNew->Size = Size;
 			pNew->Next = NULL;
 			pNew->Previous = pCurrent;
 
 			pCurrent->Next = pNew;
 
-			Address = (PVOID)((QWORD)pNew + sizeof(MM_HEAP_NODE));
+			Address = (PVOID)((ULONG)pNew + sizeof(MEMNODE));
 
 			break;
 		}
 
-		if( ((QWORD)pCurrent + (2 * sizeof(MM_HEAP_NODE)) + pCurrent->Size + Size) < (QWORD)pCurrent->Next )
+		if( ((ULONG)pCurrent + (2 * sizeof(MEMNODE)) + pCurrent->Size + Size) < (ULONG)pCurrent->Next )
 		{
-			pNew = (PMM_HEAP_NODE)((QWORD)pCurrent + sizeof(MM_HEAP_NODE) + pCurrent->Size);
-			pNew->Signature = MM_SIGNATURE;
+			pNew = (MEMNODE*)((ULONG)pCurrent + sizeof(MEMNODE) + pCurrent->Size);
+			pNew->Signature = MEM_SIGNATURE;
 			pNew->Size = Size;
 			pNew->Next = pCurrent->Next;
 			pNew->Previous = pCurrent;
@@ -55,7 +76,7 @@ MmHeapAllocate( QWORD Size,
 			pCurrent->Next->Previous = pNew;
 			pCurrent->Next = pNew;
 
-			Address = (PVOID)(pNew + sizeof(MM_HEAP_NODE));
+			Address = (PVOID)(pNew + sizeof(MEMNODE));
 
 			break;
 		}
@@ -66,20 +87,28 @@ MmHeapAllocate( QWORD Size,
 	return Address;
 }
 
+
+
+
+// ----------------------------------------------------------------------------
+//  Name: MmHeapFree
+//
+//  Desc: Frees memory from a heap.
+// ----------------------------------------------------------------------------
 VOID
 MmHeapFree( PVOID Memory,
 		    BYTE Type )
 {
-	PMM_HEAP_NODE node;
+	MEMNODE* node;
 
-	if( (QWORD)Memory < ((QWORD)HeapBase + sizeof(MM_HEAP_NODE)) ) return;
+	if( (ULONG)Memory < ((ULONG)HeapBase + sizeof(MEMNODE)) ) return;
 
-	node = (PMM_HEAP_NODE)((QWORD)Memory - sizeof(MM_HEAP_NODE));
+	node = (MEMNODE*)((ULONG)Memory - sizeof(MEMNODE));
 
-	if( node->Signature != MM_SIGNATURE ) return;
+	if( node->Signature != MEM_SIGNATURE ) return;
 
 	node->Previous->Next = node->Next;
 	if( node->Next != NULL ) node->Next->Previous = node->Previous;
 
-	memset( node, 0x00, (node->Size + sizeof(MM_HEAP_NODE)) );
+	memset( node, 0x00, (node->Size + sizeof(MEMNODE)) );
 }

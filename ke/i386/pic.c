@@ -8,6 +8,7 @@
 
 // Preprocessor directives.
 #include <sddk.h>
+#include <internal\kernel.h>
 
 
 
@@ -48,7 +49,7 @@ VOID KeInitializePIC()
 
 	IoEnableIRQ( 2 );
 
-	Ke386EnableInterrupts();
+	sti;
 }
 
 
@@ -65,19 +66,19 @@ VOID STDCALL IoEnableIRQ( UCHAR Num )
 {
 	ULONG flags;
 
-	Ke386SaveFlags( flags );
-	Ke386DisableInterrupts();
+	get_flags( flags );
+	cli;
 
 	if( Num > 7 )
 	{
-		WRITE_PORT_UCHAR( 0xA1, READ_PORT_UCHAR( 0xA1 ) & ~(1 << (Num - 8)) );
+		outb( 0xA1, inb( 0xA1 ) & ~(1 << (Num - 8)) );
 	}
 	else
 	{
-		WRITE_PORT_UCHAR( 0x21, READ_PORT_UCHAR( 0x21 ) & ~(1 << Num) );
+		outb( 0x21, inb( 0x21 ) & ~(1 << Num) );
 	}
 
-	Ke386RestoreFlags( flags );
+	set_flags( flags );
 }
 
 
@@ -94,19 +95,19 @@ VOID STDCALL IoDisableIRQ( UCHAR Num )
 {
 	ULONG flags;
 
-	Ke386SaveFlags( flags );
-	Ke386DisableInterrupts();
+	get_flags( flags );
+	cli;
 
 	if( Num > 7 )
 	{
-		WRITE_PORT_UCHAR( 0xA1, READ_PORT_UCHAR( 0xA1 ) | (1 << (Num - 8)) );
+		outb( 0xA1, inb( 0xA1 ) | (1 << (Num - 8)) );
 	}
 	else
 	{
-		WRITE_PORT_UCHAR( 0x21, READ_PORT_UCHAR( 0x21 ) | (1 << Num) );
+		outb( 0x21, inb( 0x21 ) | (1 << Num) );
 	}
 
-	Ke386RestoreFlags( flags );
+	set_flags( flags );
 }
 
 
@@ -128,12 +129,12 @@ BOOL STDCALL IoRequestIRQ( UCHAR Num, VOID(*Handler)(KINTERRUPT_CONTEXT*) )
 	if( KeIRQHandlers[Num] != NULL ) return FALSE;
 	if( Handler == NULL ) return FALSE;
 
-	Ke386SaveFlags( flags );
-	Ke386DisableInterrupts();
+	get_flags( flags );
+	cli;
 
 	KeIRQHandlers[Num] = Handler;
 
-	Ke386RestoreFlags( flags );
+	set_flags( flags );
 
 	return TRUE;
 }
@@ -157,12 +158,12 @@ BOOL STDCALL IoReleaseIRQ( UCHAR Num, VOID(*Handler)(KINTERRUPT_CONTEXT*) )
 	if( Handler == NULL ) return FALSE;
 	if( KeIRQHandlers[Num] != Handler ) return FALSE;
 
-	Ke386SaveFlags( flags );
-	Ke386DisableInterrupts();
+	get_flags( flags );
+	cli;
 
 	KeIRQHandlers[Num] = NULL;
 
-	Ke386RestoreFlags( flags );
+	set_flags( flags );
 
 	return TRUE;
 }
@@ -177,12 +178,12 @@ BOOL STDCALL IoReleaseIRQ( UCHAR Num, VOID(*Handler)(KINTERRUPT_CONTEXT*) )
 // ----------------------------------------------------------------------------
 VOID KeHandleIRQ( KINTERRUPT_CONTEXT* ctx )
 {
-	Ke386DisableInterrupts();
+	cli;
 
-	WRITE_PORT_UCHAR( 0x20, 0x20 );
-	if( ctx->num > 7 ) WRITE_PORT_UCHAR( 0xA0, 0x20 );
+	outb( 0x20, 0x20 );
+	if( ctx->num > 7 ) outb( 0xA0, 0x20 );
 
 	if( KeIRQHandlers[ctx->num] != NULL ) KeIRQHandlers[ctx->num]( ctx );
 
-	Ke386EnableInterrupts();
+	sti;
 }

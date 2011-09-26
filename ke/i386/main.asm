@@ -7,16 +7,6 @@
 [EXTERN _KernelGDT]
 [EXTERN _KernelIDT]
 [EXTERN _KeInitializeTSS]
-[EXTERN _printf]
-[EXTERN _RtlDisplayKernelVersion]
-
-db 'B', 'L', 'U', 'E'
-dd 0x100000
-dd _start - 0x100000
-dw 0
-dw 2
-dd 0
-dd ExportDirectory - 0x100000
 
 align 4
 
@@ -79,16 +69,6 @@ KERNEL_DS equ 0x10
 KERNEL_TSS equ 0x28
 
 [SECTION .data]
-
-ExportDirectory:
-	dd Export1Name - 0x100000
-	dd _printf - 0x100000
-	
-	dd Export2Name - 0x100000
-	dd _RtlDisplayKernelVersion - 0x100000
-
-Export1Name dd 'printf', 0
-Export2Name dd 'RtlDisplayKernelVersion', 0
 
 GDTR:
 	dw (6 * 8) - 1

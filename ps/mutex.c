@@ -2,9 +2,9 @@
 #include "mutex.h"
 
 VOID
-PsMutexAcquire( PPS_MUTEX pMutex )
+PsMutexAcquire( PS_MUTEX* pMutex )
 {
-	/*ASSERT( pMutex )*/
+	ASSERT( pMutex );
 
 	while( pMutex->Locked );
 
@@ -12,18 +12,18 @@ PsMutexAcquire( PPS_MUTEX pMutex )
 }
 
 VOID
-PsMutexRelease( PPS_MUTEX pMutex )
+PsMutexRelease( PS_MUTEX* pMutex )
 {
-	/*ASSERT( pMutex )*/
+	ASSERT( pMutex );
 
 	pMutex->Locked = FALSE;
 }
 
 STATUS
-PsMutexCreate( PPS_MUTEX* ppMutex )
+PsMutexCreate( PS_MUTEX** ppMutex )
 {
 	STATUS result = STATUS_SUCCESS;
-	PPS_MUTEX pNewMutex = NULL;
+	PS_MUTEX* pNewMutex = NULL;
 
 	if( !ppMutex )
 	{
@@ -31,7 +31,7 @@ PsMutexCreate( PPS_MUTEX* ppMutex )
 		goto done;
 	}
 
-	pNewMutex = MmAllocateHeap( sizeof(PS_MUTEX), MM_TYPE_KERNEL );
+	pNewMutex = (PS_MUTEX*)MmHeapAllocate( sizeof(PS_MUTEX), MM_TYPE_KERNEL );
 	if( !pNewMutex )
 	{
 		result = STATUS_OUT_OF_MEMORY;
@@ -47,7 +47,7 @@ done:
 }
 
 STATUS
-PsMutexDestroy( PPS_MUTEX pMutex )
+PsMutexDestroy( PS_MUTEX* pMutex )
 {
 	STATUS result = STATUS_SUCCESS;
 
@@ -63,7 +63,7 @@ PsMutexDestroy( PPS_MUTEX pMutex )
 		goto done;
 	}
 
-	MmFreeHeap( pMutex, MM_TYPE_KERNEL );
+	MmHeapFree( pMutex, MM_TYPE_KERNEL );
 
 done:
 	return result;

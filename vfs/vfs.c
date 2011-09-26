@@ -1,11 +1,11 @@
 #include <sddk.h>
 #include "vfs.h"
 
-LIST_CREATE( VFS_FILESYSTEM_NODE, PVFS_FILESYSTEM )
+LIST_CREATE( VFS_FILESYSTEM_NODE, VFS_FILESYSTEM )
 
-PVFS_FILESYSTEM_NODE	VfsFilesystemListHead	= NULL;
-PVFS_FILESYSTEM_NODE	VfsFilesystemListTail	= NULL;
-PPS_MUTEX				VfsFilesystemListMutex	= NULL;
+VFS_FILESYSTEM_NODE*	VfsFilesystemListHead	= NULL;
+VFS_FILESYSTEM_NODE*	VfsFilesystemListTail	= NULL;
+PS_MUTEX*				VfsFilesystemListMutex	= NULL;
 
 STATUS
 VfsInit()
@@ -26,10 +26,11 @@ done:
 }
 
 STATUS
-VfsRegisterFilesystem( PVFS_FILESYSTEM pFilesystem )
+VfsRegisterFilesystem( VFS_FILESYSTEM* pFilesystem )
 {
 	STATUS result = STATUS_SUCCESS;
-	PVFS_FILESYSTEM_NODE node = NULL;
+	VFS_FILESYSTEM_NODE* node = NULL;
+	VFS_FILESYSTEM* pTempFS = NULL;
 
 	/* Basic sanity checks. */
 	if( !pFilesystem )
@@ -51,13 +52,13 @@ VfsRegisterFilesystem( PVFS_FILESYSTEM pFilesystem )
 	}
 
 	/* Make sure another filesystem hasn't registered under the same name. */
-	if( VfsGetFilesystemByName( pFilesystem->Name ) )
+	if( STATUS_SUCCESS == VfsGetFilesystemByName( pFilesystem->Name, &pTempFS ) )
 	{
 		result = STATUS_ALREADY_EXISTS;
 		goto done;
 	}
 
-	node = MmAllocateHeap( sizeof(VFS_FILESYSTEM_NODE), MM_TYPE_KERNEL );
+	node = (VFS_FILESYSTEM_NODE*)MmHeapAllocate( sizeof(VFS_FILESYSTEM_NODE), MM_TYPE_KERNEL );
 	if( !node )
 	{
 		result = STATUS_OUT_OF_MEMORY;
@@ -88,17 +89,17 @@ VfsRegisterFilesystem( PVFS_FILESYSTEM pFilesystem )
 done:
 	if( !SUCCESS(result) )
 	{
-		if( node ) MmFreeHeap( node, MM_TYPE_KERNEL );
+		if( node ) MmHeapFree( node, MM_TYPE_KERNEL );
 	}
 
 	return result;
 }
 
 STATUS
-VfsUnregisterFilesystem( PVFS_FILESYSTEM pFilesystem )
+VfsUnregisterFilesystem( VFS_FILESYSTEM* pFilesystem )
 {
 	STATUS result = STATUS_SUCCESS;
-	PVFS_FILESYSTEM_NODE node = NULL;
+	VFS_FILESYSTEM_NODE* node = NULL;
 
 	PsMutexAcquire( VfsFilesystemListMutex );
 
@@ -144,7 +145,7 @@ VfsUnregisterFilesystem( PVFS_FILESYSTEM pFilesystem )
 				}
 			}
 
-			MmFreeHeap( node, MM_TYPE_KERNEL );
+			MmHeapFree( node, MM_TYPE_KERNEL );
 
 			goto done;
 		}
@@ -163,17 +164,17 @@ done:
 
 STATUS
 VfsGetFilesystemByName( PCHAR Name,
-						PVFS_FILESYSTEM* ppFilesystem )
+						VFS_FILESYSTEM** ppFilesystem )
 {
 	STATUS result = STATUS_SUCCESS;
-	PVFS_FILESYSTEM_NODE node = NULL;
+	VFS_FILESYSTEM_NODE* node = NULL;
 
 	/* This is an internal function. It is never meant to, nor should it ever
 	   be, a public facing function. */
 
 	/* Basic sanity checks. */
-	if( !Name ) return NULL;
-	if( !strlen( Name ) ) return NULL;
+	if( !Name ) return STATUS_INVALID_PARAMETER;
+	if( !strlen( Name ) ) return STATUS_INVALID_PARAMETER;
 
 	PsMutexAcquire( VfsFilesystemListMutex );
 

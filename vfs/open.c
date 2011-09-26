@@ -1,1 +1,2 @@
-#include <internal/vfs.h>
+#include <sddk.h>
+#include "vfs.h"

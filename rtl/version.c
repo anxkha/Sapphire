@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-//  Filename: tss.c
+//  Filename: version.c
 //  Author: Lucas Suggs
 // ----------------------------------------------------------------------------
 
@@ -13,23 +13,19 @@
 
 
 
-// Global declarations.
-KTSS	KernelTSS;
-
-
-
-
 // ----------------------------------------------------------------------------
-//  Name: KeInitializeTSS
+//  Name: RtlDisplayKernelVersion
 //
-//  Desc: Initializes the system TSS.
+//  Desc: Displays the kernel version number on the screen.
 // ----------------------------------------------------------------------------
-VOID KeInitializeTSS()
+VOID RtlDisplayKernelVersion()
 {
-	KernelTSS.esp0 = 0x7C000;
-	KernelTSS.ss0 = KERNEL_DS;
-	KernelTSS.iobitmap = 0xFFFF;
-	KernelTSS.ldt = 0;
+	ULONG major, minor, build;
 
-	KeSetGDTEntry( KERNEL_TSS, (ULONG)&KernelTSS, (sizeof(KernelTSS) - 1), 0x89, 0x00 );
+	major = KERNEL_VERSION_MAJOR;
+	minor = KERNEL_VERSION_MINOR;
+	build = KERNEL_VERSION_BUILD;
+
+	// Print out the kernel version.
+	printf( "Sapphire kernel, version %u.%u.%u\n\n", major, minor, build );
 }

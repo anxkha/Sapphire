@@ -8,6 +8,7 @@
 
 // Preprocessor directives.
 #include <sddk.h>
+#include <internal\kernel.h>
 
 
 
@@ -74,9 +75,9 @@ VOID KeHandleInterrupt( KINTERRUPT_CONTEXT* ctx )
 {
 	ULONG cr3;
 
-	Ke386DisableInterrupts();
+	cli;
 
-	Ke386GetPageDirectory( cr3 );
+	get_cr3( cr3 );
 
 	switch( ctx->num )
 	{

@@ -1,11 +1,11 @@
 #include <sddk.h>
 #include "vfs.h"
 
-LIST_CREATE( VFS_MOUNTPOINT_NODE, PVFS_MOUNTPOINT )
+LIST_CREATE( VFS_MOUNTPOINT_NODE, VFS_MOUNTPOINT )
 
-PVFS_MOUNTPOINT_NODE	VfsMountpointListHead	= NULL;
-PVFS_MOUNTPOINT_NODE	VfsMountpointListTail	= NULL;
-PPS_MUTEX				VfsMountpointListMutex	= NULL;
+VFS_MOUNTPOINT_NODE*	VfsMountpointListHead	= NULL;
+VFS_MOUNTPOINT_NODE*	VfsMountpointListTail	= NULL;
+PS_MUTEX*				VfsMountpointListMutex	= NULL;
 
 STATUS
 VfsMount( PCHAR MountpointName,
@@ -13,10 +13,10 @@ VfsMount( PCHAR MountpointName,
 		  PCHAR DeviceName )
 {
 	STATUS result = STATUS_SUCCESS;
-	PVFS_FILESYSTEM pFilesystem = NULL;
-	PIO_DEVICE pDevice = NULL;
-	PVFS_MOUNTPOINT pMountpoint = NULL;
-	PVFS_MOUNTPOINT_NODE node = NULL;
+	VFS_FILESYSTEM* pFilesystem = NULL;
+	IO_DEVICE* pDevice = NULL;
+	VFS_MOUNTPOINT* pMountpoint = NULL;
+	VFS_MOUNTPOINT_NODE* node = NULL;
 
 	/* Basic sanity checks. */
 	if( !MountpointName ) result = STATUS_INVALID_PARAMETER;
@@ -43,21 +43,21 @@ VfsMount( PCHAR MountpointName,
 	if( !SUCCESS(result) ) goto done;
 
 	/* Allocate data structures. */
-	node = MmAllocateHeap( sizeof(VFS_MOUNTPOINT_NODE), MM_TYPE_KERNEL );
+	node = (VFS_MOUNTPOINT_NODE*)MmHeapAllocate( sizeof(VFS_MOUNTPOINT_NODE), MM_TYPE_KERNEL );
 	if( !node )
 	{
 		result = STATUS_OUT_OF_MEMORY;
 		goto done;
 	}
 
-	pMountpoint = MmAllocateHeap( sizeof(VFS_MOUNTPOINT), MM_TYPE_KERNEL );
+	pMountpoint = (VFS_MOUNTPOINT*)MmHeapAllocate( sizeof(VFS_MOUNTPOINT), MM_TYPE_KERNEL );
 	if( !pMountpoint )
 	{
 		result = STATUS_OUT_OF_MEMORY;
 		goto done;
 	}
 
-	pMountpoint->MountName = MmAllocateHeap( (strlen(MountpointName) + 1), MM_TYPE_KERNEL );
+	pMountpoint->MountName = (PCHAR)MmHeapAllocate( (strlen(MountpointName) + 1), MM_TYPE_KERNEL );
 	if( !pMountpoint->MountName )
 	{
 		result = STATUS_OUT_OF_MEMORY;
@@ -101,11 +101,11 @@ done:
 	{
 		if( pMountpoint )
 		{
-			if( pMountpoint->MountName ) MmFreeHeap( pMountpoint->MountName, MM_TYPE_KERNEL );
-			MmFreeHeap( pMountpoint, MM_TYPE_KERNEL );
+			if( pMountpoint->MountName ) MmHeapFree( pMountpoint->MountName, MM_TYPE_KERNEL );
+			MmHeapFree( pMountpoint, MM_TYPE_KERNEL );
 		}
 
-		if( node ) MmFreeHeap( node, MM_TYPE_KERNEL );
+		if( node ) MmHeapFree( node, MM_TYPE_KERNEL );
 	}
 
 	return result;
@@ -113,10 +113,10 @@ done:
 
 STATUS
 VfsGetMountpointByName( PCHAR Name,
-						PVFS_MOUNTPOINT* ppMountpoint )
+						VFS_MOUNTPOINT** ppMountpoint )
 {
 	STATUS result = STATUS_SUCCESS;
-	PVFS_MOUNTPOINT_NODE node = NULL;
+	VFS_MOUNTPOINT_NODE* node = NULL;
 
 	/* This is an internal function. It is never meant to, nor should it ever
 	   be, a public facing function. */
@@ -137,7 +137,7 @@ VfsGetMountpointByName( PCHAR Name,
 
 	while( node )
 	{
-		if( !strcmp( node->Data->Name, Name ) )
+		if( !strcmp( node->Data->MountName, Name ) )
 		{
 			*ppMountpoint = node->Data;
 			goto done;

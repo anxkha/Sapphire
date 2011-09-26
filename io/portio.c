@@ -1,78 +1,83 @@
 #include <sddk.h>
 
 /* ----------------------------------------------------------------------------
- Name: WRITE_PORT_UCHAR
+ Name: outb
 
  Desc: Writes a byte to a port.
 ---------------------------------------------------------------------------- */
 VOID
-WRITE_PORT_UCHAR( PUCHAR Port, UCHAR Value )
+outb( USHORT Port, UCHAR Value )
 {
-	__asm
+	__asm( "outb %0, %w1\n\t" : : "a" (Value), "d" (Port) );
+	/*__asm
 	{
 		mov edx, Port;
 		mov al, Value;
 		out dx, al;
-	};
+	};*/
 }
 
 
 
 
 /* ----------------------------------------------------------------------------
- Name: WRITE_PORT_USHORT
+ Name: outw
 
  Desc: Writes a word to a port.
 ---------------------------------------------------------------------------- */
 VOID
-WRITE_PORT_USHORT( PUSHORT Port, USHORT Value )
+outw( USHORT Port, USHORT Value )
 {
-	__asm
+	__asm( "outw %0, %w1\n\t" : : "a" (Value), "d" (Port) );
+	/*__asm
 	{
 		mov edx, Port;
 		mov ax, Value;
 		out dx, ax;
-	};
+	};*/
 }
 
 
 
 
 /* ----------------------------------------------------------------------------
- Name: WRITE_PORT_ULONG
+ Name: outl
 
  Desc: Writes a dword to a port.
 ---------------------------------------------------------------------------- */
 VOID
-WRITE_PORT_ULONG( PULONG Port, ULONG Value )
+outl( USHORT Port, ULONG Value )
 {
-	__asm
+	__asm( "outl %0, %w1\n\t" : : "a" (Value), "d" (Port) );
+	/*__asm
 	{
 		mov edx, Port;
 		mov eax, Value;
 		out dx, eax;
-	};
+	};*/
 }
 
 
 
 
 /* ----------------------------------------------------------------------------
- Name: READ_PORT_UCHAR
+ Name: inb
 
  Desc: Reads a byte from a port.
 ---------------------------------------------------------------------------- */
 UCHAR
-READ_PORT_UCHAR( PUCHAR Port )
+inb( USHORT Port )
 {
 	UCHAR Value;
 
-	__asm
+	__asm( "inb %w1, %0\n\t" : "=a" (Value) : "d" (Port) );
+
+	/*__asm
 	{
 		mov edx, Port;
 		in al, dx
 		mov Value, al;
-	};
+	};*/
 
 	return Value;
 }
@@ -81,21 +86,23 @@ READ_PORT_UCHAR( PUCHAR Port )
 
 
 /* ----------------------------------------------------------------------------
- Name: READ_PORT_USHORT
+ Name: inw
 
  Desc: Reads a word from a port.
 ---------------------------------------------------------------------------- */
 USHORT
-READ_PORT_USHORT( PUSHORT Port )
+inw( USHORT Port )
 {
 	USHORT Value;
 
-	__asm
+	__asm( "inw %w1, %0\n\t" : "=a" (Value) : "d" (Port) );
+
+	/*__asm
 	{
 		mov edx, Port;
 		in ax, dx
 		mov Value, ax;
-	};
+	};*/
 
 	return Value;
 }
@@ -103,21 +110,23 @@ READ_PORT_USHORT( PUSHORT Port )
 
 
 /* ----------------------------------------------------------------------------
- Name: READ_PORT_ULONG
+ Name: inl
 
  Desc: Reads a dword from a port.
 ---------------------------------------------------------------------------- */
 ULONG
-READ_PORT_ULONG( PULONG Port )
+inl( USHORT Port )
 {
 	ULONG Value;
 
-	__asm
+	__asm( "inl %w1, %0\n\t" : "=a" (Value) : "d" (Port) );
+
+	/*__asm
 	{
 		mov edx, Port;
 		in eax, dx
 		mov Value, eax;
-	};
+	};*/
 
 	return Value;
 }
