@@ -18,9 +18,11 @@ KeInit( multiboot_info_t* pMultibootHeader )
 
 	KeInitializeVideo();
 
-	ASSERT( MmInit( pMultibootHeader->mem_upper ) );
-	MmInitPaging();
-	MmInitializeHeap();
+	RtlDisplayKernelVersion();
+
+	ASSERT( mm_init( pMultibootHeader->mem_upper ) );
+	mm_init_paging();
+	mm_init_heap( 0x400000 );
 
 	//PsInitializeThreadManager();
 
@@ -28,6 +30,8 @@ KeInit( multiboot_info_t* pMultibootHeader )
 
 	ASSERT( STATUS_SUCCESS == IoInitDeviceManager() );
 	ASSERT( STATUS_SUCCESS == VfsInit() );
+
+	printf( "waka waka\n" );
 
 	for( ; ; );
 }

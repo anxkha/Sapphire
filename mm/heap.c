@@ -1,6 +1,6 @@
 // Preprocessor directives.
 #include <sddk.h>
-#include "mem.h"
+#include <internal\kernel.h>
 
 
 
@@ -13,11 +13,12 @@ ULONG		HeapEnd;
 
 
 // ----------------------------------------------------------------------------
-//  Name: MmInitializeHeap
+//  Name: mm_init_heap
 //
 //  Desc: Initializes the kernel memory heap.
 // ----------------------------------------------------------------------------
-VOID MmInitializeHeap( ULONG MemSize )
+VOID
+mm_init_heap( ULONG MemSize )
 {
 	HeapBase = (MEMNODE*)MmAllocatePageAlignedMemory( MemSize );
 	HeapBase->Signature = MEM_SIGNATURE;
@@ -32,13 +33,13 @@ VOID MmInitializeHeap( ULONG MemSize )
 
 
 // ----------------------------------------------------------------------------
-//  Name: MmHeapAllocate
+//  Name: mm_heap_alloc
 //
 //  Desc: Allocates memory on a heap.
 // ----------------------------------------------------------------------------
 PVOID
-MmHeapAllocate( ULONG Size,
-			    BYTE Type )
+mm_heap_alloc( ULONG Size,
+			   BYTE Type )
 {
 	MEMNODE* pNew;
 	MEMNODE* pCurrent;
@@ -91,13 +92,13 @@ MmHeapAllocate( ULONG Size,
 
 
 // ----------------------------------------------------------------------------
-//  Name: MmHeapFree
+//  Name: mm_heap_free
 //
 //  Desc: Frees memory from a heap.
 // ----------------------------------------------------------------------------
 VOID
-MmHeapFree( PVOID Memory,
-		    BYTE Type )
+mm_heap_free( PVOID Memory,
+			  BYTE Type )
 {
 	MEMNODE* node;
 

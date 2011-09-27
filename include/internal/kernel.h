@@ -4,6 +4,7 @@
 #include "interrupt.h"
 #include "ps.h"
 #include "multiboot.h"
+#include "mm.h"
 
 #define KERNEL_VERSION_MAJOR	0
 #define KERNEL_VERSION_MINOR	0

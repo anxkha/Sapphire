@@ -43,21 +43,21 @@ VfsMount( PCHAR MountpointName,
 	if( !SUCCESS(result) ) goto done;
 
 	/* Allocate data structures. */
-	node = (VFS_MOUNTPOINT_NODE*)MmHeapAllocate( sizeof(VFS_MOUNTPOINT_NODE), MM_TYPE_KERNEL );
+	node = (VFS_MOUNTPOINT_NODE*)kmalloc( sizeof(VFS_MOUNTPOINT_NODE), MM_TYPE_KERNEL );
 	if( !node )
 	{
 		result = STATUS_OUT_OF_MEMORY;
 		goto done;
 	}
 
-	pMountpoint = (VFS_MOUNTPOINT*)MmHeapAllocate( sizeof(VFS_MOUNTPOINT), MM_TYPE_KERNEL );
+	pMountpoint = (VFS_MOUNTPOINT*)kmalloc( sizeof(VFS_MOUNTPOINT), MM_TYPE_KERNEL );
 	if( !pMountpoint )
 	{
 		result = STATUS_OUT_OF_MEMORY;
 		goto done;
 	}
 
-	pMountpoint->MountName = (PCHAR)MmHeapAllocate( (strlen(MountpointName) + 1), MM_TYPE_KERNEL );
+	pMountpoint->MountName = (PCHAR)kmalloc( (strlen(MountpointName) + 1), MM_TYPE_KERNEL );
 	if( !pMountpoint->MountName )
 	{
 		result = STATUS_OUT_OF_MEMORY;
@@ -101,11 +101,11 @@ done:
 	{
 		if( pMountpoint )
 		{
-			if( pMountpoint->MountName ) MmHeapFree( pMountpoint->MountName, MM_TYPE_KERNEL );
-			MmHeapFree( pMountpoint, MM_TYPE_KERNEL );
+			if( pMountpoint->MountName ) kfree( pMountpoint->MountName, MM_TYPE_KERNEL );
+			kfree( pMountpoint, MM_TYPE_KERNEL );
 		}
 
-		if( node ) MmHeapFree( node, MM_TYPE_KERNEL );
+		if( node ) kfree( node, MM_TYPE_KERNEL );
 	}
 
 	return result;

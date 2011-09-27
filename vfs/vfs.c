@@ -19,8 +19,11 @@ VfsInit()
 	if( !SUCCESS( result ) ) goto done;
 
 done:
-	if( VfsFilesystemListMutex ) PsMutexDestroy( VfsFilesystemListMutex );
-	if( VfsMountpointListMutex ) PsMutexDestroy( VfsMountpointListMutex );
+	if( !SUCCESS( result ) )
+	{
+		if( VfsFilesystemListMutex ) PsMutexDestroy( VfsFilesystemListMutex );
+		if( VfsMountpointListMutex ) PsMutexDestroy( VfsMountpointListMutex );
+	}
 
 	return result;
 }
@@ -58,7 +61,7 @@ VfsRegisterFilesystem( VFS_FILESYSTEM* pFilesystem )
 		goto done;
 	}
 
-	node = (VFS_FILESYSTEM_NODE*)MmHeapAllocate( sizeof(VFS_FILESYSTEM_NODE), MM_TYPE_KERNEL );
+	node = (VFS_FILESYSTEM_NODE*)kmalloc( sizeof(VFS_FILESYSTEM_NODE), MM_TYPE_KERNEL );
 	if( !node )
 	{
 		result = STATUS_OUT_OF_MEMORY;
@@ -89,7 +92,7 @@ VfsRegisterFilesystem( VFS_FILESYSTEM* pFilesystem )
 done:
 	if( !SUCCESS(result) )
 	{
-		if( node ) MmHeapFree( node, MM_TYPE_KERNEL );
+		if( node ) kfree( node, MM_TYPE_KERNEL );
 	}
 
 	return result;
@@ -145,7 +148,7 @@ VfsUnregisterFilesystem( VFS_FILESYSTEM* pFilesystem )
 				}
 			}
 
-			MmHeapFree( node, MM_TYPE_KERNEL );
+			kfree( node, MM_TYPE_KERNEL );
 
 			goto done;
 		}

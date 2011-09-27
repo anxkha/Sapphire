@@ -60,7 +60,7 @@ IoRegisterDevice( IO_DEVICE* pDevice )
 		goto done;
 	}
 
-	node = (IO_DEVICE_NODE*)MmHeapAllocate( sizeof(IO_DEVICE_NODE), MM_TYPE_KERNEL );
+	node = (IO_DEVICE_NODE*)kmalloc( sizeof(IO_DEVICE_NODE), MM_TYPE_KERNEL );
 	if( !node )
 	{
 		result = STATUS_OUT_OF_MEMORY;
@@ -90,7 +90,7 @@ IoRegisterDevice( IO_DEVICE* pDevice )
 done:
 	if( !SUCCESS(result) )
 	{
-		if( node ) MmHeapFree( node, MM_TYPE_KERNEL );
+		if( node ) kfree( node, MM_TYPE_KERNEL );
 	}
 
 	return result;
@@ -142,7 +142,7 @@ IoUnregisterDevice( IO_DEVICE* pDevice )
 				}
 			}
 
-			MmHeapFree( node, MM_TYPE_KERNEL );
+			kfree( node, MM_TYPE_KERNEL );
 
 			goto done;
 		}

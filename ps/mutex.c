@@ -31,7 +31,7 @@ PsMutexCreate( PS_MUTEX** ppMutex )
 		goto done;
 	}
 
-	pNewMutex = (PS_MUTEX*)MmHeapAllocate( sizeof(PS_MUTEX), MM_TYPE_KERNEL );
+	pNewMutex = (PS_MUTEX*)kmalloc( sizeof(PS_MUTEX), MM_TYPE_KERNEL );
 	if( !pNewMutex )
 	{
 		result = STATUS_OUT_OF_MEMORY;
@@ -63,7 +63,7 @@ PsMutexDestroy( PS_MUTEX* pMutex )
 		goto done;
 	}
 
-	MmHeapFree( pMutex, MM_TYPE_KERNEL );
+	kfree( pMutex, MM_TYPE_KERNEL );
 
 done:
 	return result;

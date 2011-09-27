@@ -39,12 +39,15 @@ PsMutexDestroy( PS_MUTEX* pMutex );
 /* mm\heap.c */
 
 PVOID
-MmHeapAllocate( ULONG Size,
-			    BYTE Type );
+mm_heap_alloc( ULONG Size,
+			   BYTE Type );
 
 VOID
-MmHeapFree( PVOID pMemory,
-		    BYTE Type );
+mm_heap_free( PVOID Memory,
+			  BYTE Type );
+
+#define kmalloc(x, y) mm_heap_alloc( x, y )
+#define kfree(x, y) mm_heap_free( x, y )
 
 /* mm\mm.c */
 
@@ -55,6 +58,12 @@ MmAllocatePageAligned( DWORD NumPages,
 VOID
 MmFreePageAligned( PVOID pMemory,
 				   BYTE Type );
+
+PVOID
+mm_reserve_region( PVOID RegionStart,
+				   ULONG RegionSize );
+
+#define mm_release_region(x) MmFreePageAligned( x, MM_TYPE_KERNEL );
 
 /* ------------------------------------------------------------------------- */
 

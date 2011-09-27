@@ -8,6 +8,7 @@
 
 // Preprocessor directives.
 #include <sddk.h>
+#include <internal\kernel.h>
 
 
 
